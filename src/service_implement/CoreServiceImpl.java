@@ -13,6 +13,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.swing.*;
+
 /**
  * Created by shikee_app03 on 16/7/12.
  */
@@ -22,25 +24,21 @@ public class CoreServiceImpl implements CoreService{
     public NewsDAO getNewDAO() {
         return newDAO;
     }
-
+    JTextArea _input;
     public void setNewDAO(NewsDAO newDAO) {
         this.newDAO = newDAO;
     }
 
     private NewsDAO newDAO;
     @Override
-    public void start() {
+    public void start(JTextArea input) {
+        _input=input;
         String url ="http://3g.chinabreed.com/list.php?fid=48";
         RequestClient client=new RequestClient();
         String htmlContent=client.getWebCon(url);
         System.out.println("=============\n\n");
         List<NewsModel> result=this.formatContent(htmlContent);
         this.saveData2DB(null);
-    }
-    public static void main(String[] args) {
-        CoreService service=new CoreServiceImpl();
-        service.start();
-
     }
 
     @Override
@@ -60,7 +58,7 @@ public class CoreServiceImpl implements CoreService{
 
     private List<NewsModel> formatContent(String content, boolean isContentFlag)
     {
-        System.out.print("=内容解析开始=\n");
+        log("=内容解析开始=\n","");
         List<NewsModel> result=new ArrayList<NewsModel>();
         Document doc = Jsoup.parse(content);
         if(isContentFlag){
@@ -82,23 +80,25 @@ public class CoreServiceImpl implements CoreService{
                 RequestClient request=new RequestClient();
                 NewsModel contentModel=formatContent(request.getWebCon(url),true).get(0);
                 newsModel.setContent(contentModel.getContent());
-                log("加载完毕,解析到内容",newsModel.getContent());
+//                log("加载完毕,解析到内容",newsModel.getContent());
                 result.add(newsModel);
             }
         }
 //        log("body",doc.body().getElementsByClass("ListMoreSort").first().getElementsByClass("cont").first().getElementsByTag("ul").text());
-        System.out.print("=内容解析结束=\n");
+        log("=内容解析结束=\n","log");
         return result;
     }
 
     private boolean saveData2DB(NewsModel obj){
-        System.out.print("=数据保存开始=\n");
-        System.out.print("=数据保存结束=\n");
+        log("=数据保存开始=\n","");
+        log("=数据保存结束=\n","");
         return true;
     }
 
     private void log(String title,String msg){
-        System.out.println(title+":"+msg+"\n============\n");
+        _input.append("\n"+title+":"+msg+"============");
+        _input.paintImmediately(_input.getBounds());
+//        _input.repaint();
     }
 }
 
