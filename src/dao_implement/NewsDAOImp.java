@@ -2,22 +2,56 @@ package dao_implement;
 
 import dao.NewsDAO;
 import entity.NewsModel;
-import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
+import toolkit.CrawlerException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by shikee_app03 on 16/7/12.
  */
-public class NewsDAOImp extends HibernateDaoSupport implements NewsDAO{
+public class NewsDAOImp extends HibernateTemplate implements NewsDAO{
+    private static final SessionFactory ourSessionFactory;
+    private static final ServiceRegistry serviceRegistry;
+
+    static {
+        try {
+            Configuration configuration = new Configuration();
+            configuration.configure();
+
+            serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+            ourSessionFactory = configuration.buildSessionFactory(serviceRegistry);
+        } catch (Throwable ex) {
+            throw new ExceptionInInitializerError(ex);
+        }
+    }
+
+    public static Session getSession() throws HibernateException {
+        return ourSessionFactory.openSession();
+    }
+
+
+
     @Override
     public Boolean save(NewsModel obj) {
+        final Session session = getSession();
         try {
-            this.getHibernateTemplate().save(obj);
-        } catch (DataAccessException e) {
+            session.save(obj);
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+        finally
+        {
+            session.close();
         }
         return true;
     }
@@ -25,12 +59,35 @@ public class NewsDAOImp extends HibernateDaoSupport implements NewsDAO{
     @Override
     public Boolean delete(NewsModel obj) {
         try {
-            this.getHibernateTemplate().delete(obj);
-        } catch (DataAccessException e) {
+            getSession().delete(obj);
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
         return true;
+    }
+
+
+    public boolean checkIsExist(NewsModel obj) throws CrawlerException {
+        if(obj==null||obj.getUrl()==null||obj.getUrl().length()<1){
+           throw new CrawlerException("传来的对象有问题");
+        }
+        List<NewsModel> result=null;
+        try {
+            Session s=getSession();
+            Query query=getSession().createQuery("from NewsModel as news where news.title=? and news.url=?");
+            query.setParameter(0,obj.getTitle());
+            query.setParameter(1,obj.getUrl());
+            result=query.list();
+            if(result.size()>0){
+                return true;
+            }else {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
@@ -38,9 +95,10 @@ public class NewsDAOImp extends HibernateDaoSupport implements NewsDAO{
         if(obj==null||obj.getId()<1){
             return null;
         }
+
         try {
-           getHibernateTemplate().load(obj,obj.getId());
-        } catch (DataAccessException e) {
+            getSession().load(obj,obj.getId());
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -48,14 +106,7 @@ public class NewsDAOImp extends HibernateDaoSupport implements NewsDAO{
     }
     @Override
     public List allList() {
-        List result=null;
-        try {
-           result=getHibernateTemplate().loadAll(NewsModel.class);
-        } catch (DataAccessException e) {
-            e.printStackTrace();
-            return null;
-        }
-        return result;
+       return null;
     }
 
     @Override

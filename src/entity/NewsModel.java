@@ -1,13 +1,15 @@
 package entity;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 /**
  * Created by shikee_app03 on 16/7/12.
  */
-@Table
-public class NewsModel {
+@Entity
+public class NewsModel implements java.io.Serializable{
     public String getTitle() {
         return title;
     }
@@ -57,6 +59,7 @@ public class NewsModel {
     }
 
     @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
     public long getId() {
         return id;
     }
