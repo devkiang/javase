@@ -1,9 +1,6 @@
 package entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 /**
  * Created by shikee_app03 on 16/7/12.
@@ -26,6 +23,7 @@ public class NewsModel implements java.io.Serializable{
         this.time = time;
     }
 
+    @Column(columnDefinition="TEXT")
     public String getContent() {
         return content;
     }
@@ -71,6 +69,7 @@ public class NewsModel implements java.io.Serializable{
     private long id;
     private String title;
     private String time;
+
     private String content;
     private String url;
     private String source;

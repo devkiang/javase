@@ -2,10 +2,7 @@ package dao_implement;
 
 import dao.NewsDAO;
 import entity.NewsModel;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.service.ServiceRegistry;
@@ -13,56 +10,46 @@ import org.hibernate.service.ServiceRegistryBuilder;
 import toolkit.CrawlerException;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by shikee_app03 on 16/7/12.
  */
 public class NewsDAOImp extends HibernateTemplate implements NewsDAO{
-    private static final SessionFactory ourSessionFactory;
-    private static final ServiceRegistry serviceRegistry;
-
-    static {
-        try {
-            Configuration configuration = new Configuration();
-            configuration.configure();
-
-            serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
-            ourSessionFactory = configuration.buildSessionFactory(serviceRegistry);
-        } catch (Throwable ex) {
-            throw new ExceptionInInitializerError(ex);
-        }
-    }
-
-    public static Session getSession() throws HibernateException {
-        return ourSessionFactory.openSession();
-    }
-
-
 
     @Override
     public Boolean save(NewsModel obj) {
         final Session session = getSession();
+        Transaction tran=session.beginTransaction();
         try {
             session.save(obj);
+            tran.commit();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
         finally
         {
+
             session.close();
         }
+
+
         return true;
     }
 
     @Override
     public Boolean delete(NewsModel obj) {
+        final Session session = getSession();
+        Transaction tran=session.beginTransaction();
         try {
-            getSession().delete(obj);
+            session.delete(obj);
+            tran.commit();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        } finally {
+
+            session.close();
         }
         return true;
     }

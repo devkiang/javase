@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Class-Path: lib/antlr-2.7.7.jar lib/aopalliance-1.0.jar lib/commons-lo
+ gging-1.2.jar lib/dom4j-1.6.1.jar lib/hibernate-commons-annotations-4
+ .0.2.Final.jar lib/hibernate-core-4.2.2.Final.jar lib/hibernate-jpa-2
+ .0-api-1.0.1.Final.jar lib/javassist-3.15.0-GA.jar lib/jboss-logging-
+ 3.1.0.GA.jar lib/jboss-transaction-api_1.1_spec-1.0.1.Final.jar lib/j
+ soup-1.9.2.jar lib/mysql-connector-java-5.6-bin.jar lib/spring-aop-4.
+ 3.1.RELEASE.jar lib/spring-aspects-4.3.1.RELEASE.jar lib/spring-beans
+ -4.3.1.RELEASE.jar lib/spring-context-4.3.1.RELEASE.jar lib/spring-co
+ ntext-support-4.3.1.RELEASE.jar lib/spring-core-4.3.1.RELEASE.jar lib
+ /spring-expression-4.3.1.RELEASE.jar lib/spring-instrument-4.3.1.RELE
+ ASE.jar lib/spring-instrument-tomcat-4.3.1.RELEASE.jar lib/spring-jdb
+ c-4.3.1.RELEASE.jar lib/spring-jms-4.3.1.RELEASE.jar lib/spring-messa
+ ging-4.3.1.RELEASE.jar lib/spring-orm-4.3.1.RELEASE.jar lib/spring-ox
+ m-4.3.1.RELEASE.jar lib/spring-test-4.3.1.RELEASE.jar lib/spring-tx-4
+ .3.1.RELEASE.jar lib/spring-web-4.2.4.RELEASE.jar lib/spring-webmvc-4
+ .2.4.RELEASE.jar lib/spring-webmvc-portlet-4.2.4.RELEASE.jar lib/spri
+ ng-websocket-4.2.4.RELEASE.jar
+Main-Class: Main
+

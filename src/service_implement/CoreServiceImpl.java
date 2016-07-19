@@ -5,6 +5,7 @@ import java.io.*;
 import dao.NewsDAO;
 import dao_implement.NewsDAOImp;
 import entity.SettingModel;
+import service.CLog;
 import service.CoreService;
 import entity.NewsModel;
 
@@ -29,7 +30,10 @@ public class CoreServiceImpl implements CoreService{
     int _dataCount=0;
     int _failCount=0;
     Timer _timer;
+    int ___repeatDataCount=0;
+    int _repeatDataCount=0;
     boolean _isFinish=true;//任务执行完毕
+    int _taskCount;
     static String urlDomain="http://3g.chinabreed.com/";
     private SettingModel _settingModel;
     public NewsDAO getNewDAO() {
@@ -38,7 +42,7 @@ public class CoreServiceImpl implements CoreService{
     public void setNewDAO(NewsDAO newDAO) {
         this.newDAO = newDAO;
     }
-
+    private CLog cLog=new CLogImpl();
     private NewsDAO newDAO=new NewsDAOImp();
 
     @Override
@@ -83,6 +87,7 @@ public class CoreServiceImpl implements CoreService{
                         }
                         ExecutorService threadPool = Executors.newFixedThreadPool(_settingModel.getThreadCount());
                         final List<NewsModel> url_title_array = getContentURLAndTitleArray(webContent);
+                        _taskCount=url_title_array.size();
                         for (final NewsModel model : url_title_array) {
                             try {
                                 threadPool.execute(new Runnable() {
@@ -90,11 +95,13 @@ public class CoreServiceImpl implements CoreService{
                                         client.getWebCon(model.getUrl(), new RequestClientCallback() {
                                             public void handleAction(String webContent) {
                                                 model.setContent(getPageHtmlCode(webContent));
+                                                model.setTime(getTime(webContent));
                                                 saveData2DB(model);
                                                 if(_dataCount==url_title_array.size()-1){
                                                     System.out.println("task was finish!");
                                                     _isFinish=true;
                                                     _dataCount=0;
+                                                    _repeatDataCount=0;
                                                 }else{
                                                     _dataCount++;
                                                     System.out.println("task is runing!  "+_dataCount);
@@ -115,7 +122,7 @@ public class CoreServiceImpl implements CoreService{
                     }
                 });
             }
-        }, 0, 1000 * 20);// 这里设定将延时每天固定执行
+        }, 0, 1000 * _settingModel.getSpeed());// 这里设定将延时每天固定执行
     }
 
     @Override
@@ -127,12 +134,16 @@ public class CoreServiceImpl implements CoreService{
     public void stop() {
         _timer.cancel();
         _timer=null;
+        dataInit();
     }
 
     private void dataInit()
     {
         _dataCount=0;
         _failCount=0;
+        _repeatDataCount=0;
+        _taskCount=0;
+        ___repeatDataCount=0;
         _isFinish=true;
     }
 
@@ -175,7 +186,16 @@ public class CoreServiceImpl implements CoreService{
      * */
     private String getPageHtmlCode(String content){
         Document doc = Jsoup.parse(content);
-        return doc.body().getElementsByClass("article-container").html();
+        String result=doc.body().getElementsByClass("article-container").get(0).getElementsByTag("section").html();
+        return result;
+    }
+
+    private String getTime(String content)
+    {
+        Document doc = Jsoup.parse(content);
+        String result=doc.body().getElementsByClass("article-container").get(0).getElementsByTag("time").text();
+        System.out.print("tiem:\n"+result+"\n");
+        return result;
     }
 
 
@@ -184,15 +204,38 @@ public class CoreServiceImpl implements CoreService{
         try {
             if(!newDAO.checkIsExist(obj)){
                 newDAO.save(obj);
+                cLog.info("爬到新数据:"+obj.getTitle());
             }else{
-                System.out.print("存在~~~~~~\n");
+                if(_taskCount-1 == _repeatDataCount){
+                    ___repeatDataCount++;
+                }
+                if(___repeatDataCount==5){//五次都搜不到新数据
+                    if(_settingModel.isAutoSpeed()){
+                        cLog.waring(___repeatDataCount+"次都扒不到新数据,自动降低搜索速度为30分钟");
+                        _settingModel.setSpeed(60*30);
+                        stop();
+                        start();
+                    }else {
+                        cLog.waring(___repeatDataCount+"次都扒不到新数据");
+                    }
+
+                }else if(___repeatDataCount==10){//10次都搜不到新数据
+                    if(_settingModel.isAutoSpeed()){
+                        cLog.waring(___repeatDataCount+"次都扒不到新数据,自动降低搜索速度为60分钟");
+                        _settingModel.setSpeed(60*60);
+                        stop();
+                        start();
+                    }else {
+                        cLog.waring(___repeatDataCount+"次都扒不到新数据");
+                    }
+                }
+                _repeatDataCount++;
             }
         } catch (CrawlerException e) {
             e.printStackTrace();
             log("数据保存失败("+obj.getTitle()+")");
             return false;
         }
-        newDAO.save(obj);
         log("数据保存结束("+obj.getTitle()+")");
         return true;
     }

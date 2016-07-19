@@ -31,4 +31,14 @@ public class SettingModel {
     private int log_level;//日志等级
     private int speed;//爬取间隔
     private int threadCount;//线程数量
+
+    public boolean isAutoSpeed() {
+        return autoSpeed;
+    }
+
+    public void setAutoSpeed(boolean autoSpeed) {
+        this.autoSpeed = autoSpeed;
+    }
+
+    private boolean autoSpeed;//自动控制速度
 }
