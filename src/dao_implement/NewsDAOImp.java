@@ -17,24 +17,22 @@ import java.util.List;
 public class NewsDAOImp extends HibernateTemplate implements NewsDAO{
 
     @Override
-    public Boolean save(NewsModel obj) {
+    public NewsModel save(NewsModel obj) {
+        NewsModel result=null;
         final Session session = getSession();
         Transaction tran=session.beginTransaction();
         try {
-            session.save(obj);
+            result=(NewsModel)session.save(obj);
             tran.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
         finally
         {
-
             session.close();
         }
-
-
-        return true;
+        return result;
     }
 
     @Override
@@ -55,7 +53,7 @@ public class NewsDAOImp extends HibernateTemplate implements NewsDAO{
     }
 
 
-    public boolean checkIsExist(NewsModel obj) throws CrawlerException {
+    public NewsModel checkIsExist(NewsModel obj) throws CrawlerException {
         if(obj==null||obj.getUrl()==null||obj.getUrl().length()<1){
            throw new CrawlerException("传来的对象有问题");
         }
@@ -67,13 +65,13 @@ public class NewsDAOImp extends HibernateTemplate implements NewsDAO{
             query.setParameter(1,obj.getUrl());
             result=query.list();
             if(result.size()>0){
-                return true;
+                return result.get(0);
             }else {
-                return false;
+                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 

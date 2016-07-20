@@ -2,8 +2,11 @@ package service_implement;
 
 import java.io.*;
 
+import dao.NewsBriefDAO;
 import dao.NewsDAO;
+import dao_implement.NewsBriefDAOImpl;
 import dao_implement.NewsDAOImp;
+import entity.NewsBriefModel;
 import entity.SettingModel;
 import service.CLog;
 import service.CoreService;
@@ -44,6 +47,7 @@ public class CoreServiceImpl implements CoreService{
     }
     private CLog cLog=new CLogImpl();
     private NewsDAO newDAO=new NewsDAOImp();
+    private NewsBriefDAO newsBriefDAO=new NewsBriefDAOImpl();
 
     @Override
     public void setSetting(SettingModel setting) {
@@ -198,14 +202,38 @@ public class CoreServiceImpl implements CoreService{
         return result;
     }
 
+    private NewsBriefModel getBriefContent(NewsModel newsModel){
+        NewsBriefModel briefModel=new NewsBriefModel(newsModel);
+        return briefModel;
+    }
+
+    private boolean saveBriefData2DB(NewsModel obj){
+        try {
+            if(newsBriefDAO.findObjByNId(obj.getId())==null){
+                NewsBriefModel newsBriefModel=getBriefContent(obj);
+                newsBriefDAO.save(newsBriefModel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            cLog.error("摘要数据保存失败:\n"+e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
 
     private boolean saveData2DB(NewsModel obj){
-        log("数据保存开始("+obj.getTitle()+")");
+
+
+
         try {
-            if(!newDAO.checkIsExist(obj)){
-                newDAO.save(obj);
+            NewsModel newsModel=newDAO.checkIsExist(obj);
+            if(newsModel==null){
+                obj=newDAO.save(obj);
                 cLog.info("爬到新数据:"+obj.getTitle());
+                saveBriefData2DB(obj);
             }else{
+                saveBriefData2DB(newsModel);
                 if(_taskCount-1 == _repeatDataCount){
                     ___repeatDataCount++;
                 }
@@ -233,10 +261,9 @@ public class CoreServiceImpl implements CoreService{
             }
         } catch (CrawlerException e) {
             e.printStackTrace();
-            log("数据保存失败("+obj.getTitle()+")");
+            cLog.error("数据保存失败("+obj.getTitle()+")");
             return false;
         }
-        log("数据保存结束("+obj.getTitle()+")");
         return true;
     }
 
