@@ -12,6 +12,10 @@ import javax.persistence.*;
 @Entity
 public class NewsBriefModel {
 
+    public NewsBriefModel(){
+
+    }
+
     public NewsBriefModel(NewsModel newsModel)
     {
         this.title=newsModel.getTitle();

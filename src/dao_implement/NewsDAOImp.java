@@ -22,8 +22,9 @@ public class NewsDAOImp extends HibernateTemplate implements NewsDAO{
         final Session session = getSession();
         Transaction tran=session.beginTransaction();
         try {
-            result=(NewsModel)session.save(obj);
+            session.save(obj);
             tran.commit();
+            result=checkIsExist(obj);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

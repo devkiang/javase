@@ -73,9 +73,11 @@ public class CoreServiceImpl implements CoreService{
         _timer = new Timer();
         _timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
+                cLog.info("任务开始");
                 if(_isFinish==false){
                     _failCount++;
                     if(_failCount>5){//如果任务有五次超时的话,则视为异常处理,重置所有数据重新请求
+                        cLog.error("发生五次异常,重置新数据");
                         dataInit();
                     }
                     return;
@@ -102,7 +104,7 @@ public class CoreServiceImpl implements CoreService{
                                                 model.setTime(getTime(webContent));
                                                 saveData2DB(model);
                                                 if(_dataCount==url_title_array.size()-1){
-                                                    System.out.println("task was finish!");
+                                                    cLog.info("任务完成");
                                                     _isFinish=true;
                                                     _dataCount=0;
                                                     _repeatDataCount=0;
@@ -117,6 +119,7 @@ public class CoreServiceImpl implements CoreService{
                                 });
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                cLog.error(e.getMessage());
                                 threadPool.shutdown();
                             }
 
@@ -223,9 +226,6 @@ public class CoreServiceImpl implements CoreService{
     }
 
     private boolean saveData2DB(NewsModel obj){
-
-
-
         try {
             NewsModel newsModel=newDAO.checkIsExist(obj);
             if(newsModel==null){
@@ -234,33 +234,10 @@ public class CoreServiceImpl implements CoreService{
                 saveBriefData2DB(obj);
             }else{
                 saveBriefData2DB(newsModel);
-                if(_taskCount-1 == _repeatDataCount){
-                    ___repeatDataCount++;
-                }
-                if(___repeatDataCount==5){//五次都搜不到新数据
-                    if(_settingModel.isAutoSpeed()){
-                        cLog.waring(___repeatDataCount+"次都扒不到新数据,自动降低搜索速度为30分钟");
-                        _settingModel.setSpeed(60*30);
-                        stop();
-                        start();
-                    }else {
-                        cLog.waring(___repeatDataCount+"次都扒不到新数据");
-                    }
-
-                }else if(___repeatDataCount==10){//10次都搜不到新数据
-                    if(_settingModel.isAutoSpeed()){
-                        cLog.waring(___repeatDataCount+"次都扒不到新数据,自动降低搜索速度为60分钟");
-                        _settingModel.setSpeed(60*60);
-                        stop();
-                        start();
-                    }else {
-                        cLog.waring(___repeatDataCount+"次都扒不到新数据");
-                    }
-                }
-                _repeatDataCount++;
             }
         } catch (CrawlerException e) {
             e.printStackTrace();
+            cLog.error(e.getMessage());
             cLog.error("数据保存失败("+obj.getTitle()+")");
             return false;
         }
@@ -285,16 +262,6 @@ public class CoreServiceImpl implements CoreService{
     }
 
 }
-
-
-
-
-
-
-
-
-
-
 
 interface RequestClientCallback{
     public void handleAction(String webContent);
