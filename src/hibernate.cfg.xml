@@ -4,7 +4,8 @@
         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <property name="connection.url">jdbc:mysql://127.0.0.1:3306/crawler</property><!-- 121.41.64.139 -->
+        <property name="connection.url">jdbc:mysql://121.41.64.139:3306/crawler</property>
+        <!--roperty name="connection.url">jdbc:mysql://127.0.0.1:3306/crawler</property>-->
         <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
         <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
         <property name="connection.username">root</property>
